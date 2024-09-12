@@ -72,9 +72,9 @@ export default function ResponsePage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-start bg-gradient-to-r from-blue-100 to-purple-200 p-4">
-      <div className="w-full max-w-[500px] bg-white bg-opacity-80 rounded-lg shadow-md p-6 mt-8">
-        <Link href="/" className="text-blue-500 hover:underline mb-4 inline-block">&larr; 返回首页</Link>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-r from-blue-100 to-purple-200 p-4">
+      <div className="w-full max-w-[500px] bg-white bg-opacity-80 rounded-lg shadow-md p-6">
+        <Link href="/" className="text-blue-500 hover:underline fixed top-4 left-4 z-10">&larr; 返回首页</Link>
       
         <div className="text-gray-600 mb-4 flex justify-center" dangerouslySetInnerHTML={{ __html: response.response.replace(/width="[^"]*"\s*height="[^"]*"/, 'viewBox="0 0 400 600"') }} />
         <p className="text-sm text-gray-400">创建时间: {new Date(response.created_at).toLocaleString()}</p>
