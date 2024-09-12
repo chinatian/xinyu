@@ -7,7 +7,9 @@ const isProduction = process.env.NODE_ENV === 'production';
 
 export async function getDb() {
   if (isProduction) {
-    return createPool();
+    return createPool({
+        connectionString: 'psql "postgres://default:oSPYq7jE6Zrd@ep-blue-sky-a4nk8rl9.us-east-1.aws.neon.tech:5432/verceldb?sslmode=require"',
+      });
   } else {
     return open({
       filename: './mydb.sqlite',
