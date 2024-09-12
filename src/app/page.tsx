@@ -146,19 +146,7 @@ export default function Home() {
             ))}
           </div>
         )}
-        <div className="flex justify-center mt-4">
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-            <button
-              key={page}
-              onClick={() => fetchResponses(page)}
-              className={`mx-1 px-3 py-1 rounded ${
-                currentPage === page ? 'bg-blue-500 text-white' : 'bg-gray-200'
-              }`}
-            >
-              {page}
-            </button>
-          ))}
-        </div>
+        
         <div className="mt-8 text-sm text-gray-600 bg-white bg-opacity-80 rounded-lg p-4">
           <h3 className="font-semibold mb-2">免责声明：</h3>
           <p>
