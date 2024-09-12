@@ -4,9 +4,17 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 
+interface ResponseData {
+  id: number;
+  prompt: string;
+  response: string;
+  created_at: string;
+}
+
 export default function ResponsePage() {
-  const [response, setResponse] = useState<any>(null);
+  const [response, setResponse] = useState<ResponseData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const params = useParams();
   const { id } = params;
 
@@ -18,12 +26,14 @@ export default function ResponsePage() {
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
         }
-        const data = await res.json();
+        const data: ResponseData = await res.json();
         console.log('Received data:', data);
         setResponse(data);
       } catch (error) {
         console.error('Error fetching response:', error);
-        setError(`Error fetching response: ${error.message}`);
+        setError(`Error fetching response: ${(error as Error).message}`);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -31,6 +41,14 @@ export default function ResponsePage() {
       fetchResponse();
     }
   }, [id]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-100 to-purple-200">
+        <div className="text-2xl font-bold">Loading...</div>
+      </div>
+    );
+  }
 
   if (error) {
     return (
@@ -45,7 +63,11 @@ export default function ResponsePage() {
   }
 
   if (!response) {
-    return <div>Loading...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-100 to-purple-200">
+        <div className="text-2xl font-bold">No response found</div>
+      </div>
+    );
   }
 
   return (
