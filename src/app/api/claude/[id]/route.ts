@@ -1,25 +1,5 @@
 import { NextResponse } from 'next/server';
-import sqlite3 from 'sqlite3';
-import { open } from 'sqlite';
-
-async function openDb() {
-    const db = await open({
-      filename: './mydb.sqlite',
-      driver: sqlite3.Database
-    });
-  
-    // 确保表存在
-    await db.exec(`
-      CREATE TABLE IF NOT EXISTS responses (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        prompt TEXT,
-        response TEXT,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-  
-    return db;
-  }
+import { query } from '@/lib/db';
 
 export async function GET(
   request: Request,
@@ -28,12 +8,13 @@ export async function GET(
   const id = params.id;
 
   try {
-    const db = await openDb();
-    const response = await db.get('SELECT * FROM responses WHERE id = ?', id);
-    await db.close();
+    const responses = await query(
+      'SELECT * FROM responses WHERE id = $1',
+      [id]
+    );
 
-    if (response) {
-      return NextResponse.json(response);
+    if (responses && responses.length > 0) {
+      return NextResponse.json(responses[0]);
     } else {
       return NextResponse.json({ error: 'Response not found' }, { status: 404 });
     }

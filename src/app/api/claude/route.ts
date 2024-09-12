@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
-import sqlite3 from 'sqlite3';
-import { open } from 'sqlite';
+import { query } from '@/lib/db';
+
+
 
 import axios from 'axios';
 
@@ -59,27 +60,23 @@ export async function POST(request: Request) {
   const mockResponse = svgImage
 
   try {
-    const db = await openDb();
-
-    // 确保表存在
-    await db.exec(`
+    await query(`
       CREATE TABLE IF NOT EXISTS responses (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id SERIAL PRIMARY KEY,
         prompt TEXT,
         response TEXT,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
 
-    // 插入数据
-    await db.run(
-      'INSERT INTO responses (prompt, response) VALUES (?, ?)',
+    const result = await query(
+      'INSERT INTO responses (prompt, response) VALUES ($1, $2) RETURNING id',
       [prompt, mockResponse]
     );
 
-    await db.close();
+    const insertedId = result[0].id;
 
-    return NextResponse.json({ result: mockResponse });
+    return NextResponse.json({ result: mockResponse, id: insertedId });
   } catch (error) {
     console.error('Database error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
@@ -92,17 +89,17 @@ export async function GET(request: Request) {
   const limit = 10; // 每页显示的记录数
 
   try {
-    const db = await openDb();
     const offset = (page - 1) * limit;
 
-    const [responses, totalCount] = await Promise.all([
-      db.all('SELECT * FROM responses ORDER BY created_at DESC LIMIT ? OFFSET ?', [limit, offset]),
-      db.get('SELECT COUNT(*) as count FROM responses')
-    ]);
+    const responses = await query(
+      'SELECT * FROM responses ORDER BY created_at DESC LIMIT $1 OFFSET $2',
+      [limit, offset]
+    );
 
-    await db.close();
+    const totalCountResult = await query('SELECT COUNT(*) as count FROM responses');
+    const totalCount = totalCountResult[0].count;
 
-    const totalPages = Math.ceil(totalCount.count / limit);
+    const totalPages = Math.ceil(totalCount / limit);
 
     return NextResponse.json({
       responses,
