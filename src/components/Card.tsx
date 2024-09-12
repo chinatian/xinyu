@@ -12,9 +12,9 @@ const Card: React.FC<CardProps> = ({ id, title, content, createdAt }) => {
   return (
     <Link href={`/response/${id}`} className="block">
       <div className="bg-white bg-opacity-80 rounded-lg shadow-md p-4 flex flex-col h-full hover:shadow-lg transition-shadow">
-        <h2 className="text-lg font-semibold mb-2">{title}</h2>
+        {/* <h2 className="text-lg font-semibold mb-2">{title}</h2> */}
         <div className="text-gray-600 overflow-hidden flex-grow">
-          <div dangerouslySetInnerHTML={{ __html: content }} className="max-w-full" />
+          <div dangerouslySetInnerHTML={{ __html: content.replace(/width="[^"]*"\s*height="[^"]*"/, 'viewBox="0 0 400 600"') }} className="max-w-full" />
         </div>
         {createdAt && <p className="text-xs text-gray-400 mt-2">创建时间: {createdAt}</p>}
       </div>

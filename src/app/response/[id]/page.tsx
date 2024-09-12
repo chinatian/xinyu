@@ -29,6 +29,7 @@ export default function ResponsePage() {
         const data: ResponseData = await res.json();
         console.log('Received data:', data);
         setResponse(data);
+        document.title = data.prompt;
       } catch (error) {
         console.error('Error fetching response:', error);
         setError(`Error fetching response: ${(error as Error).message}`);
@@ -72,10 +73,10 @@ export default function ResponsePage() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-start bg-gradient-to-r from-blue-100 to-purple-200 p-4">
-      <div className="w-full max-w-4xl bg-white bg-opacity-80 rounded-lg shadow-md p-6 mt-8">
+      <div className="w-full max-w-[500px] bg-white bg-opacity-80 rounded-lg shadow-md p-6 mt-8">
         <Link href="/" className="text-blue-500 hover:underline mb-4 inline-block">&larr; 返回首页</Link>
-        <h1 className="text-2xl font-bold mb-4">问题: {response.prompt}</h1>
-        <div className="text-gray-600 mb-4 flex justify-center" dangerouslySetInnerHTML={{ __html: response.response }} />
+      
+        <div className="text-gray-600 mb-4 flex justify-center" dangerouslySetInnerHTML={{ __html: response.response.replace(/width="[^"]*"\s*height="[^"]*"/, 'viewBox="0 0 400 600"') }} />
         <p className="text-sm text-gray-400">创建时间: {new Date(response.created_at).toLocaleString()}</p>
       </div>
     </div>

@@ -12,9 +12,27 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [inputError, setInputError] = useState<string | null>(null);
+
+  const validateInput = (text: string): boolean => {
+    if (text.trim().length === 0) {
+      setInputError("输入不能为空");
+      return false;
+    }
+    if (text.length > 10) {
+      setInputError("输入不能超过10个汉字");
+      return false;
+    }
+    setInputError(null);
+    return true;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validateInput(inputText)) {
+      setTimeout(() => setInputError(null), 3000); // 3秒后自动消失
+      return;
+    }
     setIsLoading(true);
     setSubmitError(null);
     try {
@@ -31,6 +49,7 @@ export default function Home() {
       const data = await response.json();
       setResult(data.result);
       fetchResponses(1); // 刷新历史记录
+      setInputText(""); // 清空输入框
     } catch (error) {
       console.error('Error:', error);
       setSubmitError("服务器开了小差，请稍后再试。");
@@ -70,26 +89,33 @@ export default function Home() {
         <h1 className="text-4xl font-bold text-center my-8 text-gray-800">
           汉语新解
         </h1>
-        <form onSubmit={handleSubmit} className="flex items-center gap-4 mb-8">
-          <input
-            type="text"
-            value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
-            placeholder="在此输入文本"
-            className="flex-grow px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white bg-opacity-50"
-            disabled={isLoading}
-          />
-          <button
-            type="submit"
-            className={`text-white px-4 py-2 rounded-md transition-colors ${
-              isLoading
-                ? 'bg-gray-400 cursor-not-allowed'
-                : 'bg-blue-300 hover:bg-blue-400'
-            }`}
-            disabled={isLoading}
-          >
-            {isLoading ? '提交中...' : '提交'}
-          </button>
+        <form onSubmit={handleSubmit} className="flex flex-col items-center gap-4 mb-8">
+          <div className="w-full flex items-center gap-4">
+            <input
+              type="text"
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+              placeholder="在此输入文本（最多10个汉字）"
+              className="flex-grow px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white bg-opacity-50"
+              disabled={isLoading}
+            />
+            <button
+              type="submit"
+              className={`text-white px-4 py-2 rounded-md transition-colors ${
+                isLoading
+                  ? 'bg-gray-400 cursor-not-allowed'
+                  : 'bg-blue-300 hover:bg-blue-400'
+              }`}
+              disabled={isLoading}
+            >
+              {isLoading ? '提交中...' : '提交'}
+            </button>
+          </div>
+          {inputError && (
+            <div className="w-full bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded relative" role="alert">
+              <span className="block sm:inline">{inputError}</span>
+            </div>
+          )}
         </form>
         
         {submitError && (
@@ -144,3 +170,4 @@ export default function Home() {
     </div>
   );
 }
+
