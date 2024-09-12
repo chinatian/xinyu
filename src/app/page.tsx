@@ -11,11 +11,12 @@ export default function Home() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    console.log(result)
+    setSubmitError(null);
     try {
       const response = await fetch('/api/claude', {
         method: 'POST',
@@ -24,12 +25,16 @@ export default function Home() {
         },
         body: JSON.stringify({ prompt: inputText }),
       });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       const data = await response.json();
       setResult(data.result);
       fetchResponses(1); // 刷新历史记录
     } catch (error) {
       console.error('Error:', error);
-      setResult("发生错误，请稍后再试。");
+      setSubmitError("服务器开了小差，请稍后再试。");
+      setTimeout(() => setSubmitError(null), 3000); // 3秒后自动消失
     } finally {
       setIsLoading(false);
     }
@@ -87,6 +92,13 @@ export default function Home() {
           </button>
         </form>
         
+        {submitError && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+            <strong className="font-bold">错误！</strong>
+            <span className="block sm:inline"> {submitError}</span>
+          </div>
+        )}
+
         <h2 className="text-2xl font-bold mt-8 mb-4">历史记录</h2>
         {fetchError ? (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
