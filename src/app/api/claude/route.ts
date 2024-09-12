@@ -14,6 +14,7 @@ async function callHanyuxinjieAPI(word: string) {
         'Accept-Language': 'en-US,en;q=0.9',
         'Origin': 'https://hanyuxinjie.com',
         'Referer': 'https://hanyuxinjie.com/',
+        'Cookie': '_ga=GA1.1.153758186.1726111827; _clck=trxxe7%7C2%7Cfp4%7C0%7C1716; _clsk=d5n860%7C1726122089651%7C6%7C1%7Ct.clarity.ms%2Fcollect; _ga_PCWP41T8Q0=GS1.1.1726120765.4.1.1726122091.0.0.0'
       }
     });
     return response.data;
