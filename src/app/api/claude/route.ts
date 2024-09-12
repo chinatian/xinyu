@@ -78,7 +78,7 @@ export async function POST(request: Request) {
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const page = parseInt(searchParams.get('page') || '1', 10);
-  const limit = 10; // 每页显示的记录数
+  const limit = 9; // 每页显示的记录数
 
   try {
     const offset = (page - 1) * limit;
