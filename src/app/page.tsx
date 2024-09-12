@@ -14,6 +14,7 @@ export default function Home() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    console.log(result)
     try {
       const response = await fetch('/api/claude', {
         method: 'POST',
