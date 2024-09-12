@@ -1,101 +1,115 @@
-import Image from "next/image";
+'use client'
+import { useState, useEffect } from "react";
+import Card from "../components/Card";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [inputText, setInputText] = useState("");
+  const [result, setResult] = useState("");
+  const [responses, setResponses] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/claude', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ prompt: inputText }),
+      });
+      const data = await response.json();
+      setResult(data.result);
+      fetchResponses(1); // 刷新历史记录
+    } catch (error) {
+      console.error('Error:', error);
+      setResult("发生错误，请稍后再试。");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchResponses = async (page: number) => {
+    try {
+      const response = await fetch(`/api/claude?page=${page}`);
+      const data = await response.json();
+      setResponses(data.responses);
+      setCurrentPage(data.currentPage);
+      setTotalPages(data.totalPages);
+    } catch (error) {
+      console.error('Error fetching responses:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchResponses(1);
+  }, []);
+
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-start bg-gradient-to-r from-blue-100 to-purple-200 p-4">
+      <div className="w-full max-w-6xl">
+        <h1 className="text-4xl font-bold text-center my-8 text-gray-800">
+          汉语新解
+        </h1>
+        <form onSubmit={handleSubmit} className="flex items-center gap-4 mb-8">
+          <input
+            type="text"
+            value={inputText}
+            onChange={(e) => setInputText(e.target.value)}
+            placeholder="在此输入文本"
+            className="flex-grow px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white bg-opacity-50"
+            disabled={isLoading}
+          />
+          <button
+            type="submit"
+            className={`text-white px-4 py-2 rounded-md transition-colors ${
+              isLoading
+                ? 'bg-gray-400 cursor-not-allowed'
+                : 'bg-blue-300 hover:bg-blue-400'
+            }`}
+            disabled={isLoading}
           >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+            {isLoading ? '提交中...' : '提交'}
+          </button>
+        </form>
+        
+        <h2 className="text-2xl font-bold mt-8 mb-4">历史记录</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {responses.map((response: any) => (
+            <Card 
+              key={response.id}
+              id={response.id}
+              title={`问题: ${response.prompt}`} 
+              content={response.response}
+              createdAt={new Date(response.created_at).toLocaleString()}
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+          ))}
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        <div className="flex justify-center mt-4">
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+            <button
+              key={page}
+              onClick={() => fetchResponses(page)}
+              className={`mx-1 px-3 py-1 rounded ${
+                currentPage === page ? 'bg-blue-500 text-white' : 'bg-gray-200'
+              }`}
+            >
+              {page}
+            </button>
+          ))}
+        </div>
+        <div className="mt-8 text-sm text-gray-600 bg-white bg-opacity-80 rounded-lg p-4">
+          <h3 className="font-semibold mb-2">免责声明：</h3>
+          <p>
+            本网站提供的信息仅供参考。我们不对信息的准确性、完整性或适用性做出任何保证。
+            使用本网站提供的信息所产生的风险由用户自行承担。请在做出任何决定之前，务必进行独立验证和咨询专业意见。请务必尊重当地法律法规！
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
