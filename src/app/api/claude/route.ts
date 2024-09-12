@@ -16,26 +16,6 @@ async function callHanyuxinjieAPI(word: string) {
 }
 
 
-// 初始化数据库连接
-async function openDb() {
-  const db = await open({
-    filename: './mydb.sqlite',
-    driver: sqlite3.Database
-  });
-
-  // 确保表存在
-  await db.exec(`
-    CREATE TABLE IF NOT EXISTS responses (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      prompt TEXT,
-      response TEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
-
-  return db;
-}
-
 export async function POST(request: Request) {
   const { prompt } = await request.json();
 

@@ -1,4 +1,5 @@
 import { createPool, sql } from '@vercel/postgres';
+import { Database } from 'sqlite';
 import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
 
@@ -21,6 +22,6 @@ export async function query(queryString: string, params: any[] = []) {
     return rows;
   } else {
     const db = await getDb();
-    return db.all(queryString, params);
+    return  (db as Database).all(queryString, params);
   }
 }
