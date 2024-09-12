@@ -10,6 +10,7 @@ export default function Home() {
   const [totalPages, setTotalPages] = useState(1);
 
   const [isLoading, setIsLoading] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,14 +36,22 @@ export default function Home() {
   };
 
   const fetchResponses = async (page: number) => {
+    setIsLoading(true);
+    setFetchError(null);
     try {
       const response = await fetch(`/api/claude?page=${page}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       const data = await response.json();
       setResponses(data.responses);
       setCurrentPage(data.currentPage);
       setTotalPages(data.totalPages);
     } catch (error) {
       console.error('Error fetching responses:', error);
+      setFetchError("获取历史记录时出错，请稍后再试。");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -79,17 +88,26 @@ export default function Home() {
         </form>
         
         <h2 className="text-2xl font-bold mt-8 mb-4">历史记录</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {responses.map((response: any) => (
-            <Card 
-              key={response.id}
-              id={response.id}
-              title={`问题: ${response.prompt}`} 
-              content={response.response}
-              createdAt={new Date(response.created_at).toLocaleString()}
-            />
-          ))}
-        </div>
+        {fetchError ? (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+            <strong className="font-bold">错误！</strong>
+            <span className="block sm:inline"> {fetchError}</span>
+          </div>
+        ) : isLoading ? (
+          <div className="text-center">加载中...</div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {responses.map((response: any) => (
+              <Card 
+                key={response.id}
+                id={response.id}
+                title={`问题: ${response.prompt}`} 
+                content={response.response}
+                createdAt={new Date(response.created_at).toLocaleString()}
+              />
+            ))}
+          </div>
+        )}
         <div className="flex justify-center mt-4">
           {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
             <button

@@ -87,59 +87,30 @@ export async function POST(request: Request) {
 }
 
 export async function GET(request: Request) {
-  const url = new URL(request.url);
-  const pathParts = url.pathname.split('/');
-  const id = pathParts[pathParts.length - 1];
+  const { searchParams } = new URL(request.url);
+  const page = parseInt(searchParams.get('page') || '1', 10);
+  const limit = 10; // 每页显示的记录数
 
-  console.log('GET request received. Path:', url.pathname);
-  console.log('Extracted ID:', id);
-
-  if (id && id !== 'claude') {
-    // 获取单个响应
-    try {
-      console.log('Attempting to fetch single response with ID:', id);
-      const db = await openDb();
-      const response = await db.get('SELECT * FROM responses WHERE id = ?', id);
-      await db.close();
-
-      if (response) {
-        console.log('Response found:', response);
-        return NextResponse.json(response);
-      } else {
-        console.log('Response not found for ID:', id);
-        return NextResponse.json({ error: 'Response not found' }, { status: 404 });
-      }
-    } catch (error) {
-      console.error('Database error:', error);
-      return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
-    }
-  } else {
-    // 获取分页响应列表
-    console.log('Fetching paginated response list');
-    const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = 10; // 每页显示的记录数
+  try {
+    const db = await openDb();
     const offset = (page - 1) * limit;
 
-    try {
-      const db = await openDb();
+    const [responses, totalCount] = await Promise.all([
+      db.all('SELECT * FROM responses ORDER BY created_at DESC LIMIT ? OFFSET ?', [limit, offset]),
+      db.get('SELECT COUNT(*) as count FROM responses')
+    ]);
 
-      const [totalCount] = await db.all('SELECT COUNT(*) as count FROM responses');
-      const responses = await db.all(
-        'SELECT * FROM responses ORDER BY created_at DESC LIMIT ? OFFSET ?',
-        [limit, offset]
-      );
+    await db.close();
 
-      await db.close();
+    const totalPages = Math.ceil(totalCount.count / limit);
 
-      return NextResponse.json({
-        responses,
-        totalPages: Math.ceil(totalCount.count / limit),
-        currentPage: page
-      });
-    } catch (error) {
-      console.error('Database error:', error);
-      return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
-    }
+    return NextResponse.json({
+      responses,
+      currentPage: page,
+      totalPages,
+    });
+  } catch (error) {
+    console.error('Database error:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
