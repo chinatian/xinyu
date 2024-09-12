@@ -125,7 +125,7 @@ export default function Home() {
           </div>
         )}
 
-        <h2 className="text-2xl font-bold mt-8 mb-4">历史记录</h2>
+
         {fetchError ? (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
             <strong className="font-bold">错误！</strong>
