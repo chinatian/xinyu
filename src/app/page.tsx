@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import Card from "../components/Card";
 import Link from 'next/link';
 import Footer from "../components/Footer";  // 导入 Footer 组件
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
   const [inputText, setInputText] = useState("");
@@ -29,6 +30,8 @@ export default function Home() {
     return true;
   };
 
+  const router = useRouter();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateInput(inputText)) {
@@ -49,9 +52,8 @@ export default function Home() {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
-      setResult(data.result);
-      fetchResponses(1); // 刷新历史记录
-      setInputText(""); // 清空输入框
+      // 使用 router.push 进行导航
+      router.push(`/response/${data.id}`);
     } catch (error) {
       console.error('Error:', error);
       setSubmitError("服务器开了小差，请稍后再试。");
