@@ -49,7 +49,14 @@ export default function ResponsePage() {
           newMetaDescription.name = 'description';
           newMetaDescription.content = description;
           document.head.appendChild(newMetaDescription);
+
+          
         }
+
+        const twitterImage = document.createElement('meta');
+        twitterImage.setAttribute('property', 'twitter:image');
+        twitterImage.setAttribute('content', `${window.location.origin}/prompt/svg/${id}`);
+        document.head.appendChild(twitterImage);
       } catch (error) {
         console.error('Error fetching response:', error);
         setError(`Error fetching response: ${(error as Error).message}`);
