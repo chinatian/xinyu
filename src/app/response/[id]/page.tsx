@@ -49,8 +49,6 @@ export default function ResponsePage() {
           newMetaDescription.name = 'description';
           newMetaDescription.content = description;
           document.head.appendChild(newMetaDescription);
-
-          
         }
 
         const twitterImage = document.createElement('meta');

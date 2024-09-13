@@ -1,4 +1,5 @@
-import type { Metadata } from "next";
+import { Metadata } from 'next'
+import Script from 'next/script'
 import localFont from "next/font/local";
 import "./globals.css";
 
@@ -15,7 +16,7 @@ const geistMono = localFont({
 
 export const metadata: Metadata = {
   title: "汉语新解",
-  description: "汉语新解",
+  description: "探索汉语的新解释",
 };
 
 export default function RootLayout({
@@ -24,11 +25,24 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="zh">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {children}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'G-W4BLZKXF88');
+          `}
+        </Script>
       </body>
     </html>
   );
