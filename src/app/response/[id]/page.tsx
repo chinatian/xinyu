@@ -30,6 +30,26 @@ export default function ResponsePage() {
         console.log('Received data:', data);
         setResponse(data);
         document.title = data.prompt;
+        // Extract text content from SVG for description
+        const parser = new DOMParser();
+        const svgDoc = parser.parseFromString(data.response, 'image/svg+xml');
+        const textElements = svgDoc.getElementsByTagName('text');
+        let description = '';
+        for (let i = 0; i < textElements.length; i++) {
+          description += textElements[i].textContent + ' ';
+        }
+        description = description.trim();
+        
+        // Set meta description
+        const metaDescription = document.querySelector('meta[name="description"]');
+        if (metaDescription) {
+          metaDescription.setAttribute('content', description);
+        } else {
+          const newMetaDescription = document.createElement('meta');
+          newMetaDescription.name = 'description';
+          newMetaDescription.content = description;
+          document.head.appendChild(newMetaDescription);
+        }
       } catch (error) {
         console.error('Error fetching response:', error);
         setError(`Error fetching response: ${(error as Error).message}`);
@@ -79,7 +99,16 @@ export default function ResponsePage() {
 
   const shareOnTwitter = () => {
     if (response) {
-      const tweetText = encodeURIComponent(`汉语新解: ${response.prompt}`);
+      const parser = new DOMParser();
+      const svgDoc = parser.parseFromString(response.response, "image/svg+xml");
+      const textElements = svgDoc.querySelectorAll('text');
+      let extractedText = '';
+      textElements.forEach(element => {
+        extractedText += element.textContent + ' ';
+      });
+      extractedText = extractedText.trim();
+
+      const tweetText = encodeURIComponent(`汉语新解: ${response.prompt}\n${extractedText}`);
       const tweetUrl = encodeURIComponent(`${window.location.origin}/response/${response.id}`);
       window.open(`https://twitter.com/intent/tweet?text=${tweetText}&url=${tweetUrl}`, '_blank');
     }
@@ -140,3 +169,4 @@ export default function ResponsePage() {
     </div>
   );
 }
+
