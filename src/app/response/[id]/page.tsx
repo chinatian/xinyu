@@ -77,6 +77,14 @@ export default function ResponsePage() {
     }
   };
 
+  const shareOnTwitter = () => {
+    if (response) {
+      const tweetText = encodeURIComponent(`汉语新解: ${response.prompt}`);
+      const tweetUrl = encodeURIComponent(`${window.location.origin}/response/${response.id}`);
+      window.open(`https://twitter.com/intent/tweet?text=${tweetText}&url=${tweetUrl}`, '_blank');
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-100 to-purple-200">
@@ -107,8 +115,15 @@ export default function ResponsePage() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-r from-blue-100 to-purple-200 p-4">
-      <div className="w-full max-w-[500px]">
-        <Link href="/" className="text-blue-500 hover:underline fixed top-4 left-4 z-10">&larr; 返回首页</Link>
+      <div className="w-full max-w-[500px] relative">
+        <Link href="/" className="text-blue-500 hover:underline fixed top-4 left-4 z-10">&larr; 新建</Link>
+        
+        <button 
+          onClick={shareOnTwitter}
+          className="fixed top-4 right-4 z-10 bg-blue-400 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded"
+        >
+          分享到 Twitter
+        </button>
         
         <div className="bg-white bg-opacity-80 rounded-lg shadow-md p-6 mb-4">
           <div className="text-gray-600 mb-4 flex justify-center" dangerouslySetInnerHTML={{ __html: response.response.replace(/width="[^"]*"\s*height="[^"]*"/, 'viewBox="0 0 400 600"') }} />

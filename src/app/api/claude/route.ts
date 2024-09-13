@@ -28,6 +28,7 @@ async function callHanyuxinjieAPI(word: string) {
 }
 
 
+
 export async function POST(request: Request) {
   const { prompt } = await request.json();
 
