@@ -95,7 +95,7 @@ export default function Home() {
           <div className="flex justify-between h-16">
             <div className="flex-shrink-0 flex items-center">
               <Link href="/" className="text-2xl font-bold text-blue-600">
-                Xinyu
+                Anyprompt
               </Link>
             </div>
             {/* 如果需要，这里可以添加更多的导航项 */}
