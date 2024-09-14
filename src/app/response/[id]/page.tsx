@@ -15,6 +15,7 @@ export default function ResponsePage() {
   const [response, setResponse] = useState<ResponseData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [copyStatus, setCopyStatus] = useState<string>(''); // Added state for copy status
   const params = useParams();
   const { id } = params;
 
@@ -119,6 +120,52 @@ export default function ResponsePage() {
     }
   };
 
+  const copyImage = async () => {
+    if (response) {
+      try {
+        const svgContent = response.response.replace(/width="[^"]*"\s*height="[^"]*"/, 'width="400" height="600"');
+        const blob = new Blob([svgContent], { type: 'image/svg+xml' });
+        const url = URL.createObjectURL(blob);
+        
+        const img = new Image();
+        img.onload = async () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = 400;
+          canvas.height = 600;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0);
+            
+            canvas.toBlob(async (blob) => {
+              if (blob) {
+                try {
+                  await navigator.clipboard.write([
+                    new ClipboardItem({
+                      [blob.type]: blob
+                    })
+                  ]);
+                  setCopyStatus('图片已复制到剪贴板');
+                  setTimeout(() => setCopyStatus(''), 3000); // 3秒后清除状态
+                } catch (err) {
+                  console.error('Failed to copy image: ', err);
+                  setCopyStatus('复制失败，请重试');
+                  setTimeout(() => setCopyStatus(''), 3000);
+                }
+              }
+            }, 'image/png');
+          }
+        };
+        img.src = url;
+      } catch (error) {
+        console.error('Error copying image:', error);
+        setCopyStatus('复制失败，请重试');
+        setTimeout(() => setCopyStatus(''), 3000);
+      }
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-100 to-purple-200">
@@ -164,12 +211,25 @@ export default function ResponsePage() {
           <p className="text-sm text-gray-400">创建时间: {new Date(response.created_at).toLocaleString()}</p>
         </div>
         
-        <button 
-          onClick={downloadImage}
-          className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
-        >
-          保存为 PNG 图片
-        </button>
+        <div className="flex space-x-4">
+          <button 
+            onClick={downloadImage}
+            className="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+          >
+            保存为 PNG 图片
+          </button>
+          <button 
+            onClick={copyImage}
+            className="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
+          >
+            复制图片
+          </button>
+        </div>
+        {copyStatus && (
+          <div className="mt-2 text-center text-sm text-gray-600">
+            {copyStatus}
+          </div>
+        )}
       </div>
     </div>
   );
